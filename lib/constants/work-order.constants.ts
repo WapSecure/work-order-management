@@ -44,3 +44,57 @@ export const STATUS_COLORS: Record<(typeof WORK_ORDER.STATUSES)[number], string>
   'In Progress': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   Done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
 };
+
+export const MESSAGES = {
+  DELETE: {
+    CONFIRM: 'Are you sure you want to delete this work order?',
+    SUCCESS: 'Work order deleted successfully',
+    ERROR: 'Failed to delete work order. Please try again.',
+  },
+  CREATE: {
+    SUCCESS: 'Work order created successfully',
+    ERROR: 'Failed to create work order. Please try again.',
+  },
+  UPDATE: {
+    SUCCESS: 'Work order updated successfully',
+    ERROR: 'Failed to update work order. Please try again.',
+  },
+  FETCH: {
+    ERROR: 'Failed to fetch work orders. Please try again.',
+    NOT_FOUND: 'Work order not found',
+  },
+  FORM: {
+    SUBMIT_ERROR: 'Failed to save work order. Please try again.',
+    VALIDATION_ERROR: 'Please fix the validation errors',
+    SAVING: 'Saving...',
+    CREATE_BUTTON: 'Create Work Order',
+    UPDATE_BUTTON: 'Update Work Order',
+    CANCEL: 'Cancel',
+  },
+  EMPTY_STATE: {
+    TITLE: 'No work orders found',
+    DESCRIPTION: 'Get started by creating your first work order to track tasks and projects.',
+    ACTION: 'Create Work Order',
+  },
+  TABLE: {
+    TITLE: 'Title',
+    PRIORITY: 'Priority',
+    STATUS: 'Status',
+    UPDATED: 'Updated',
+    ACTIONS: 'Actions',
+    NO_ORDERS: 'No work orders found',
+    CREATE_FIRST: 'Create your first work order to get started',
+    WORK_ORDERS_COUNT: (count: number) => `${count} work order${count !== 1 ? 's' : ''}`,
+  },
+  FILTERS: {
+    SEARCH_PLACEHOLDER: 'Search by title or description...',
+    ALL_STATUSES: 'All Statuses',
+    CLEAR_FILTERS: 'Clear filters',
+  },
+  PAGE: {
+    TITLE: 'Work Orders',
+    CREATE_TITLE: 'Create Work Order',
+    EDIT_TITLE: 'Edit Work Order',
+    DETAIL_TITLE: 'Work Order Details',
+  },
+} as const;
