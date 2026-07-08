@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // React 19 features
   reactStrictMode: true,
 
   // Enable experimental features
@@ -10,8 +11,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['localhost:3000'],
       bodySizeLimit: '2mb',
     },
-    // Optimize for production
-    optimizeCss: true,
+    // optimizeCss: true, // Comment this out temporarily
   },
 
   // Image optimization
@@ -79,12 +79,8 @@ const nextConfig: NextConfig = {
   // Enable production source maps
   productionBrowserSourceMaps: true,
 
-  // Webpack configuration - fixed unused variable
-  webpack: (config, { isServer: _isServer }) => {
-    // Add any custom webpack configurations here
-    // The underscore prefix tells TypeScript this variable is intentionally unused
-    return config;
-  },
+  // Turbopack configuration (Next.js 16)
+  turbopack: {},
 };
 
 export default nextConfig;
