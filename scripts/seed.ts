@@ -1,17 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { WorkOrder } from '@/types/work-order.types';
 import { getCurrentISOString } from '@/lib/utils/date';
-
-// Define types locally to avoid import issues
-type WorkOrder = {
-  id: string;
-  title: string;
-  description: string;
-  priority: 'Low' | 'Medium' | 'High';
-  status: 'Open' | 'In Progress' | 'Done';
-  updatedAt: string;
-};
 
 const SAMPLE_DATA: Omit<WorkOrder, 'id'>[] = [
   {
@@ -114,6 +105,19 @@ async function seed() {
     console.log('Status breakdown:');
     Object.entries(statusCounts).forEach(([status, count]) => {
       console.log(`  ${status}: ${count}`);
+    });
+
+    const priorityCounts = orders.reduce(
+      (acc, order) => {
+        acc[order.priority] = (acc[order.priority] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    console.log('\nPriority breakdown:');
+    Object.entries(priorityCounts).forEach(([priority, count]) => {
+      console.log(`  ${priority}: ${count}`);
     });
   } catch (error) {
     console.error('❌ Failed to seed data:', error);

@@ -1,6 +1,5 @@
 import { format, formatDistanceToNow, isValid, parseISO } from 'date-fns';
-
-export const DATE_FORMAT = 'MMM d, yyyy HH:mm';
+import { WORK_ORDER } from '@/lib/constants/work-order.constants';
 
 /**
  * Format a date string to a readable format
@@ -8,7 +7,7 @@ export const DATE_FORMAT = 'MMM d, yyyy HH:mm';
 export function formatDate(date: string | Date): string {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
   if (!isValid(dateObj)) return 'Invalid date';
-  return format(dateObj, DATE_FORMAT);
+  return format(dateObj, WORK_ORDER.DATE_FORMAT);
 }
 
 /**
@@ -25,4 +24,16 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export function getCurrentISOString(): string {
   return new Date().toISOString();
+}
+
+/**
+ * Check if a string is a valid ISO date
+ */
+export function isValidISODate(date: string): boolean {
+  try {
+    const parsed = parseISO(date);
+    return isValid(parsed);
+  } catch {
+    return false;
+  }
 }
