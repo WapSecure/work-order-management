@@ -3,11 +3,14 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // Enable experimental features
   experimental: {
+    // Enable server actions for form submissions
     serverActions: {
       allowedOrigins: ['localhost:3000'],
       bodySizeLimit: '2mb',
     },
+    // Optimize for production
     optimizeCss: true,
   },
 
@@ -70,14 +73,16 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Powered by header
   poweredByHeader: false,
 
   // Enable production source maps
   productionBrowserSourceMaps: true,
 
-  // Webpack configuration
-  webpack: (config, { isServer }) => {
+  // Webpack configuration - fixed unused variable
+  webpack: (config, { isServer: _isServer }) => {
     // Add any custom webpack configurations here
+    // The underscore prefix tells TypeScript this variable is intentionally unused
     return config;
   },
 };
