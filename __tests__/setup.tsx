@@ -6,25 +6,25 @@ import React from 'react';
 
 // Mock Next.js navigation
 vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(() => ({
+  useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
     refresh: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
     prefetch: vi.fn(),
-  })),
-  usePathname: vi.fn(() => '/work-orders'),
-  useSearchParams: vi.fn(() => new URLSearchParams()),
+  }),
+  usePathname: () => '/work-orders',
+  useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn(),
   notFound: vi.fn(),
 }));
 
-// Mock Next.js image component - using React.createElement
+// Mock Next.js image component
 vi.mock('next/image', () => ({
-  default: vi.fn((props: { alt?: string; src: string; [key: string]: unknown }) => {
+  default: (props: { alt?: string; src: string; [key: string]: unknown }) => {
     return React.createElement('img', { ...props, alt: props.alt || '' });
-  }),
+  },
 }));
 
 // Mock fetch
