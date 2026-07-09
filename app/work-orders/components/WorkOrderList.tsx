@@ -8,6 +8,7 @@ import { PlusIcon } from '@/components/icons';
 import { WorkOrderTable } from './WorkOrderTable';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { DeleteConfirmationModal } from '@/components/shared/DeleteConfirmationModal';
 import { useDeleteWorkOrder } from '@/hooks/useWorkOrders';
 import { ROUTES } from '@/lib/constants/routes';
 import { MESSAGES } from '@/lib/constants/work-order.constants';
@@ -19,24 +20,44 @@ interface WorkOrderListProps {
 
 export function WorkOrderList({ initialOrders, isLoading = false }: WorkOrderListProps) {
   const [optimisticOrders, setOptimisticOrders] = useState(initialOrders);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedOrderTitle, setSelectedOrderTitle] = useState<string>('');
   const deleteMutation = useDeleteWorkOrder();
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(MESSAGES.DELETE.CONFIRM)) {
-      return;
-    }
+  const handleDeleteClick = (id: string, title: string) => {
+    setSelectedOrderId(id);
+    setSelectedOrderTitle(title);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedOrderId) return;
+
+    const orderId = selectedOrderId;
+
+    // Close modal first
+    setIsModalOpen(false);
+    setSelectedOrderId(null);
+    setSelectedOrderTitle('');
 
     // Optimistic update
-    setOptimisticOrders(prev => prev.filter(order => order.id !== id));
+    setOptimisticOrders(prev => prev.filter(order => order.id !== orderId));
 
     try {
-      await deleteMutation.mutateAsync(id);
+      await deleteMutation.mutateAsync(orderId);
     } catch (error) {
       // Rollback on error
       setOptimisticOrders(initialOrders);
       console.error(MESSAGES.DELETE.ERROR, error);
       alert(MESSAGES.DELETE.ERROR);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsModalOpen(false);
+    setSelectedOrderId(null);
+    setSelectedOrderTitle('');
   };
 
   if (isLoading) {
@@ -81,8 +102,17 @@ export function WorkOrderList({ initialOrders, isLoading = false }: WorkOrderLis
 
       <WorkOrderTable
         orders={optimisticOrders}
-        onDelete={handleDelete}
-        isDeleting={deleteMutation.isPending ? 'deleting' : null}
+        onDelete={handleDeleteClick}
+        isDeleting={deleteMutation.isPending ? selectedOrderId : null}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isModalOpen}
+        title="Delete Work Order"
+        message={`Are you sure you want to delete "${selectedOrderTitle}"? This action cannot be undone.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

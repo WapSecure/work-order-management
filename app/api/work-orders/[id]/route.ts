@@ -10,9 +10,10 @@ export const revalidate = 0;
  * GET /api/work-orders/:id
  * Fetch a single work order by ID
  */
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const order = await workOrderRepository.findById(params.id);
+    const { id } = await params;
+    const order = await workOrderRepository.findById(id);
 
     if (!order) {
       return NextResponse.json(
@@ -35,8 +36,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
  * PUT /api/work-orders/:id
  * Update an existing work order
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -53,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Check if order exists
-    const existingOrder = await workOrderRepository.findById(params.id);
+    const existingOrder = await workOrderRepository.findById(id);
     if (!existingOrder) {
       return NextResponse.json(
         { error: ERROR_MESSAGES.NOT_FOUND },
@@ -62,7 +64,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Update order
-    const order = await workOrderRepository.update(params.id, validationResult.data);
+    const order = await workOrderRepository.update(id, validationResult.data);
 
     return NextResponse.json(order);
   } catch (error) {
@@ -78,10 +80,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
  * DELETE /api/work-orders/:id
  * Delete a work order
  */
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    // Check if order exists
-    const existingOrder = await workOrderRepository.findById(params.id);
+    const { id } = await params;
+
+    const existingOrder = await workOrderRepository.findById(id);
     if (!existingOrder) {
       return NextResponse.json(
         { error: ERROR_MESSAGES.NOT_FOUND },
@@ -89,8 +95,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
       );
     }
 
-    // Delete order
-    const deleted = await workOrderRepository.delete(params.id);
+    const deleted = await workOrderRepository.delete(id);
 
     if (!deleted) {
       return NextResponse.json(

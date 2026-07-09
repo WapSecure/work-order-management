@@ -7,3 +7,4 @@ export * from './SearchIcon';
 export * from './EmptyStateIcon';
 export * from './CloseIcon';
 export * from './CheckIcon';
+export * from './ArrowLeftIcon';

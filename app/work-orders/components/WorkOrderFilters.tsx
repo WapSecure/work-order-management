@@ -1,16 +1,15 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { Select } from '@/components/ui/select/Select';
 import { Input } from '@/components/ui/input/Input';
 import { Button } from '@/components/ui/button/Button';
 import { SearchIcon, CloseIcon } from '@/components/icons';
-import { WORK_ORDER } from '@/lib/constants/work-order.constants';
-import { useDebounce } from '@/hooks/useDebounce';
+import { WORK_ORDER, MESSAGES } from '@/lib/constants/work-order.constants';
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
+  { value: '', label: MESSAGES.FILTERS.ALL_STATUSES },
   ...WORK_ORDER.STATUSES.map(status => ({
     value: status,
     label: status,
@@ -25,43 +24,75 @@ export function WorkOrderFilters() {
   const currentStatus = searchParams?.get('status') || '';
   const currentSearch = searchParams?.get('search') || '';
 
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams?.toString());
-      if (value) {
-        params.set(name, value);
-      } else {
-        params.delete(name);
+  const [searchValue, setSearchValue] = useState(currentSearch);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-      return params.toString();
+    };
+  }, []);
+
+  const updateURL = useCallback(
+    (params: Record<string, string>) => {
+      const urlParams = new URLSearchParams(searchParams?.toString());
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+          urlParams.set(key, value);
+        } else {
+          urlParams.delete(key);
+        }
+      });
+      const queryString = urlParams.toString();
+      router.push(`${pathname}${queryString ? `?${queryString}` : ''}`);
     },
-    [searchParams]
+    [router, pathname, searchParams]
   );
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    router.push(`${pathname}?${createQueryString('status', value)}`);
-  };
+  const handleStatusChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      updateURL({ status: value });
+    },
+    [updateURL]
+  );
 
-  const handleSearchChange = (value: string) => {
-    router.push(`${pathname}?${createQueryString('search', value)}`);
-  };
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchValue(value);
 
-  const handleClearFilters = () => {
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      if (value.length === 0) {
+        updateURL({ search: '' });
+        return;
+      }
+
+      // Only search if minimum characters met
+      if (value.length >= WORK_ORDER.SEARCH.MIN_CHARS) {
+        debounceTimerRef.current = setTimeout(() => {
+          updateURL({ search: value });
+        }, WORK_ORDER.SEARCH.DEBOUNCE_MS);
+      }
+    },
+    [updateURL]
+  );
+
+  const handleClearFilters = useCallback(() => {
+    setSearchValue('');
     router.push(pathname);
-  };
+  }, [router, pathname]);
 
-  // Debounced search to avoid too many URL updates
-  const debouncedSearch = useDebounce((value: string) => {
-    handleSearchChange(value);
-  }, 300);
-
-  const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    debouncedSearch(value);
-  };
-
-  const hasActiveFilters = currentStatus || currentSearch;
+  const hasActiveFilters = Boolean(currentStatus || currentSearch);
+  const showMinCharsHint =
+    searchValue.length > 0 && searchValue.length < WORK_ORDER.SEARCH.MIN_CHARS;
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -70,11 +101,16 @@ export function WorkOrderFilters() {
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             className="pl-10"
-            placeholder="Search by title or description..."
-            defaultValue={currentSearch}
-            onChange={onSearchInputChange}
+            placeholder={MESSAGES.FILTERS.SEARCH_PLACEHOLDER}
+            value={searchValue}
+            onChange={handleSearchChange}
             aria-label="Search work orders"
           />
+          {showMinCharsHint && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {MESSAGES.FILTERS.SEARCH_MIN_CHARS(WORK_ORDER.SEARCH.MIN_CHARS)}
+            </p>
+          )}
         </div>
 
         <Select
@@ -94,7 +130,7 @@ export function WorkOrderFilters() {
           className="flex items-center gap-1 whitespace-nowrap"
         >
           <CloseIcon className="h-4 w-4" />
-          Clear filters
+          {MESSAGES.FILTERS.CLEAR_FILTERS}
         </Button>
       )}
     </div>

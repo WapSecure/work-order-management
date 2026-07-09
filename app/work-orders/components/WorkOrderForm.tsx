@@ -14,6 +14,7 @@ interface WorkOrderFormProps {
   onSubmit: (data: CreateWorkOrderInput | UpdateWorkOrderInput) => Promise<void>;
   isLoading?: boolean;
   isEdit?: boolean;
+  onCancel?: () => void;
 }
 
 interface FormData {
@@ -38,14 +39,15 @@ export function WorkOrderForm({
   onSubmit,
   isLoading = false,
   isEdit = false,
+  onCancel,
 }: WorkOrderFormProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>(() => ({
+  const [formData, setFormData] = useState<FormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
     priority: initialData?.priority || 'Medium',
     status: initialData?.status || WORK_ORDER.DEFAULT_STATUS,
-  }));
+  });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -98,7 +100,11 @@ export function WorkOrderForm({
   };
 
   const handleCancel = () => {
-    router.back();
+    if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
   };
 
   return (

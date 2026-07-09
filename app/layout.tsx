@@ -18,8 +18,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Work Order Management',
   description: 'Manage work orders efficiently',
-  keywords: 'work orders, management, tasks',
+  keywords: 'work orders, management, tasks, priority, status',
   authors: [{ name: 'Your Name' }],
+  openGraph: {
+    title: 'Work Order Management',
+    description: 'Manage work orders efficiently',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen flex flex-col bg-gray-50">
+      <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
         <Providers>{children}</Providers>
       </body>
     </html>

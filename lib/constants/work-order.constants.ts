@@ -19,6 +19,10 @@ export const WORK_ORDER = {
   CACHE_TTL: 5000, // 5 seconds
   PAGE_SIZE: 10,
   DATE_FORMAT: 'MMM d, yyyy HH:mm',
+  SEARCH: {
+    MIN_CHARS: 3,
+    DEBOUNCE_MS: 500,
+  },
 } as const;
 
 export const PRIORITY_LABELS: Record<(typeof WORK_ORDER.PRIORITIES)[number], string> = {
@@ -88,6 +92,7 @@ export const MESSAGES = {
   },
   FILTERS: {
     SEARCH_PLACEHOLDER: 'Search by title or description...',
+    SEARCH_MIN_CHARS: (min: number) => `Type at least ${min} characters to search`,
     ALL_STATUSES: 'All Statuses',
     CLEAR_FILTERS: 'Clear filters',
   },

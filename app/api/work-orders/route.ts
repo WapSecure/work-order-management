@@ -1,57 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { workOrderRepository } from '@/lib/data/work-order.repository';
-import { createWorkOrderSchema, workOrderQuerySchema } from '@/lib/validation/work-order.schema';
-import { WorkOrderFilters } from '@/types/work-order.types';
+import { updateWorkOrderSchema } from '@/lib/validation/work-order.schema';
 import { ERROR_MESSAGES, HTTP_STATUS } from '@/lib/constants/api';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * GET /api/work-orders
- * Fetch work orders with optional filters and pagination
+ * GET /api/work-orders/:id
+ * Fetch a single work order by ID
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const queryParams = Object.fromEntries(searchParams);
+    const { id } = await params;
+    const order = await workOrderRepository.findById(id);
 
-    // Validate query parameters
-    const validationResult = workOrderQuerySchema.safeParse(queryParams);
-
-    if (!validationResult.success) {
+    if (!order) {
       return NextResponse.json(
-        {
-          error: ERROR_MESSAGES.VALIDATION_ERROR,
-          fieldErrors: validationResult.error.flatten().fieldErrors,
-        },
-        { status: HTTP_STATUS.BAD_REQUEST }
+        { error: ERROR_MESSAGES.NOT_FOUND },
+        { status: HTTP_STATUS.NOT_FOUND }
       );
     }
 
-    const { status, search, page, pageSize } = validationResult.data;
-
-    // Build filters
-    const filters: WorkOrderFilters = {};
-    if (status) filters.status = status;
-    if (search) filters.search = search;
-
-    // Fetch orders
-    const orders = await workOrderRepository.findAll(filters);
-
-    // Apply pagination
-    const start = (page - 1) * pageSize;
-    const paginatedOrders = orders.slice(start, start + pageSize);
-
-    return NextResponse.json({
-      data: paginatedOrders,
-      total: orders.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(orders.length / pageSize),
-    });
+    return NextResponse.json(order);
   } catch (error) {
-    console.error('Failed to fetch work orders:', error);
+    console.error('Failed to fetch work order:', error);
     return NextResponse.json(
       { error: ERROR_MESSAGES.SERVER_ERROR },
       { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
@@ -60,15 +33,16 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/work-orders
- * Create a new work order
+ * PUT /api/work-orders/:id
+ * Update an existing work order
  */
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     // Validate request body
-    const validationResult = createWorkOrderSchema.safeParse(body);
+    const validationResult = updateWorkOrderSchema.safeParse(body);
 
     if (!validationResult.success) {
       return NextResponse.json(
@@ -80,12 +54,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create work order
-    const order = await workOrderRepository.create(validationResult.data);
+    // Check if order exists
+    const existingOrder = await workOrderRepository.findById(id);
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.NOT_FOUND },
+        { status: HTTP_STATUS.NOT_FOUND }
+      );
+    }
 
-    return NextResponse.json(order, { status: HTTP_STATUS.CREATED });
+    // Update order
+    const order = await workOrderRepository.update(id, validationResult.data);
+
+    return NextResponse.json(order);
   } catch (error) {
-    console.error('Failed to create work order:', error);
+    console.error('Failed to update work order:', error);
+    return NextResponse.json(
+      { error: ERROR_MESSAGES.SERVER_ERROR },
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+    );
+  }
+}
+
+/**
+ * DELETE /api/work-orders/:id
+ * Delete a work order
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // Check if order exists
+    const existingOrder = await workOrderRepository.findById(id);
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.NOT_FOUND },
+        { status: HTTP_STATUS.NOT_FOUND }
+      );
+    }
+
+    // Delete order
+    const deleted = await workOrderRepository.delete(id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.NOT_FOUND },
+        { status: HTTP_STATUS.NOT_FOUND }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Work order deleted successfully' },
+      { status: HTTP_STATUS.OK }
+    );
+  } catch (error) {
+    console.error('Failed to delete work order:', error);
     return NextResponse.json(
       { error: ERROR_MESSAGES.SERVER_ERROR },
       { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
