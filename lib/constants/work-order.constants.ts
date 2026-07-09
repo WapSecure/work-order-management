@@ -52,15 +52,15 @@ export const STATUS_COLORS: Record<(typeof WORK_ORDER.STATUSES)[number], string>
 export const MESSAGES = {
   DELETE: {
     CONFIRM: 'Are you sure you want to delete this work order?',
-    SUCCESS: 'Work order deleted successfully',
+    SUCCESS: 'Work order deleted successfully! 🗑️',
     ERROR: 'Failed to delete work order. Please try again.',
   },
   CREATE: {
-    SUCCESS: 'Work order created successfully',
+    SUCCESS: 'Work order created successfully! 🎉',
     ERROR: 'Failed to create work order. Please try again.',
   },
   UPDATE: {
-    SUCCESS: 'Work order updated successfully',
+    SUCCESS: 'Work order updated successfully! ✅',
     ERROR: 'Failed to update work order. Please try again.',
   },
   FETCH: {
@@ -101,5 +101,27 @@ export const MESSAGES = {
     CREATE_TITLE: 'Create Work Order',
     EDIT_TITLE: 'Edit Work Order',
     DETAIL_TITLE: 'Work Order Details',
+  },
+  TOAST: {
+    CREATE: {
+      LOADING: 'Creating work order...',
+      SUCCESS: 'Work order created successfully! 🎉',
+      ERROR: 'Failed to create work order. Please try again.',
+    },
+    UPDATE: {
+      LOADING: 'Updating work order...',
+      SUCCESS: 'Work order updated successfully! ✅',
+      ERROR: 'Failed to update work order. Please try again.',
+    },
+    DELETE: {
+      LOADING: 'Deleting work order...',
+      SUCCESS: 'Work order deleted successfully! 🗑️',
+      ERROR: 'Failed to delete work order. Please try again.',
+    },
+    FETCH: {
+      LOADING: 'Loading work orders...',
+      SUCCESS: 'Work orders loaded successfully! 📋',
+      ERROR: 'Failed to load work orders. Please try again.',
+    },
   },
 } as const;

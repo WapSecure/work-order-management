@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/lib/providers/Providers';
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,9 +34,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-        <Providers>{children}</Providers>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen flex flex-col bg-background text-foreground">
+        <Providers>
+          <div className="container mx-auto px-4 py-2 flex justify-end">
+            <LanguageSwitcher />
+          </div>
+          {children}
+        </Providers>
       </body>
     </html>
   );

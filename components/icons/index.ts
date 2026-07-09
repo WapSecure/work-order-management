@@ -8,3 +8,4 @@ export * from './EmptyStateIcon';
 export * from './CloseIcon';
 export * from './CheckIcon';
 export * from './ArrowLeftIcon';
+export * from './ChevronDownIcon';

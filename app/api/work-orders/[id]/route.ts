@@ -87,6 +87,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // Check if order exists
     const existingOrder = await workOrderRepository.findById(id);
     if (!existingOrder) {
       return NextResponse.json(
@@ -95,6 +96,7 @@ export async function DELETE(
       );
     }
 
+    // Delete order
     const deleted = await workOrderRepository.delete(id);
 
     if (!deleted) {
@@ -115,4 +117,14 @@ export async function DELETE(
       { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
     );
   }
+}
+
+// Handle OPTIONS request for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: 'GET, PUT, DELETE, OPTIONS',
+    },
+  });
 }
