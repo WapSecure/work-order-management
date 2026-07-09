@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { WorkOrder, CreateWorkOrderInput, UpdateWorkOrderInput } from '@/types/work-order.types';
 import { Button } from '@/components/ui/button/Button';
@@ -50,6 +50,35 @@ export function WorkOrderForm({
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Check if form has been modified (for edit mode)
+  const hasChanges = useMemo(() => {
+    if (!isEdit || !initialData) return false;
+
+    return (
+      formData.title !== initialData.title ||
+      formData.description !== initialData.description ||
+      formData.priority !== initialData.priority ||
+      formData.status !== initialData.status
+    );
+  }, [formData, initialData, isEdit]);
+
+  const isFormValid = useMemo(() => {
+    return (
+      formData.title.trim().length >= WORK_ORDER.TITLE.MIN_LENGTH &&
+      formData.title.trim().length <= WORK_ORDER.TITLE.MAX_LENGTH &&
+      formData.description.trim().length >= WORK_ORDER.DESCRIPTION.MIN_LENGTH &&
+      formData.description.trim().length <= WORK_ORDER.DESCRIPTION.MAX_LENGTH
+    );
+  }, [formData]);
+
+  const isSubmitDisabled = useMemo(() => {
+    if (isLoading) return true;
+    if (isEdit) {
+      return !hasChanges || !isFormValid;
+    }
+    return !isFormValid;
+  }, [isLoading, isEdit, hasChanges, isFormValid]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -183,7 +212,7 @@ export function WorkOrderForm({
         >
           {MESSAGES.FORM.CANCEL}
         </Button>
-        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+        <Button type="submit" disabled={isSubmitDisabled} className="w-full sm:w-auto">
           {isLoading
             ? MESSAGES.FORM.SAVING
             : isEdit
@@ -191,6 +220,12 @@ export function WorkOrderForm({
               : MESSAGES.FORM.CREATE_BUTTON}
         </Button>
       </div>
+
+      {isEdit && !hasChanges && !isLoading && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          Make changes to enable the update button
+        </p>
+      )}
     </form>
   );
 }
